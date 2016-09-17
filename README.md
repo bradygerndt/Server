@@ -1,2 +1,2 @@
 # Server
-Event driven and threaded file server made with C and Sockets.
+Event driven and threaded file transfer server made with C and Sockets.
