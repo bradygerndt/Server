@@ -117,6 +117,29 @@ int checkGet(char buf[])
     }
 }
 
+int checkConnection(int fd, fd_set *master_read)
+{
+  char buf[512];
+  size_t bytesRecv;
+
+
+  if ((bytesRecv = recv(fd, buf, sizeof buf, 0))<=0)
+  {
+    //error or connection refused
+    if(bytesRecv == 0)
+    {
+      printf("server: socket %d hung up\n", fd);
+    }
+    else
+    {
+      perror("recv");
+    }
+    delete(fd);
+    close(fd);
+    FD_CLR(fd, master_read);
+  }
+}
+
 //figure out whether we need ipv6 or ipv4
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -230,6 +253,7 @@ int main(int argc, char const *argv[]) {
     read_fds = master_read;
     if(select(big_fd+1, &read_fds, NULL, NULL, &t) == -1)
     {
+      printf("in the place\n");
       perror("select");
       exit(4);
     }
@@ -266,22 +290,7 @@ int main(int argc, char const *argv[]) {
           {
             memset(buf, 0, sizeof buf);
             //get data from the client
-            //check that connection exists
-            if ((bytesRecv = recv(i, buf, sizeof buf, 0))<=0)
-            {
-              //error or connection refused
-              if(bytesRecv == 0)
-              {
-                printf("server: socket %d hung up\n", i);
-              }
-              else
-              {
-                perror("recv");
-              }
-              delete(i);
-              close(i);
-              FD_CLR(i, &master_read);
-            }
+            checkConnection(i, &master_read);
             if(checkGet(buf) == 1)
             {
               memset(buf, 0, sizeof buf);
@@ -321,21 +330,7 @@ int main(int argc, char const *argv[]) {
             {
               memset(buf, 0, sizeof buf);
               strcpy(buf, "Please enter \"Get\" to retrieve file on server.\n");
-              if ((bytesRecv = recv(i, buf, sizeof buf, 0))<=0)
-              {
-                //error or connection refused
-                if(bytesRecv == 0)
-                {
-                  printf("server: socket %d hung up\n", i);
-                }
-                else
-                {
-                  perror("recv");
-                }
-                delete(i);
-                close(i);
-                FD_CLR(i, &master_read);
-              }
+              checkConnection(i, &master_read);
               bytesSent = send(i, buf, strlen(buf), 0);
               continue;
             }
