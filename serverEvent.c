@@ -164,8 +164,6 @@ int main(int argc, char const *argv[]) {
   long byterec[200];
   fd_set master_read;
   fd_set read_fds;
-  fd_set write_fds;
-  fd_set master_write;
   struct timeval t;
 //set time value
   t.tv_sec = 2;
@@ -185,10 +183,8 @@ int main(int argc, char const *argv[]) {
   strcpy(fileName, argv[1]);
   strcpy(portno, argv[2]);
 
-  FD_ZERO(&master_write);
   FD_ZERO(&master_read);
   FD_ZERO(&read_fds);
-  FD_ZERO(&write_fds);
 
 
   memset(&hints, 0, sizeof hints);
